@@ -3,9 +3,9 @@ import ccxt
 import random
 
 #----main-options----#
-switch_cex = "binance"       # binance, okx, mexc, kucoin, gate, huobi, bybit
+switch_cex = "binance"       # binance, okx, mexc, kucoin, gate, huobi, bybit, bitget
 symbolWithdraw = "BNB"      # символ токена BNB, ETH, MATIC
-network = "BSC"     # название сети   zkSync Era, BSC, Arbitrum One, Optimism, zkSync Lite, ETH/ERC20, MATIC
+network = "BSC"     # название сети   zkSync Era/zkSyncEra (для bitget), BSC, Arbitrum One, Optimism, zkSync Lite, ETH/ERC20, MATIC
 proxy_server = 'http://l11CQd:ryathpo@47.9.55.230:3000' #"http://login:password@IP:port"
 
 #----second-options----#
@@ -23,6 +23,10 @@ class API:
     okx_apikey = "your_api"
     okx_apisecret = "your_api_secret"
     okx_passphrase = "your_passphrase"
+    # bitget API
+    bitget_apikey = "your_api"
+    bitget_apisecret = "your_api_secret"
+    bitget_passphrase = "your_passphrase"
     # bybit API
     bybit_apikey = "your_api"
     bybit_apisecret = "your_api_secret"
@@ -70,6 +74,33 @@ def binance_withdraw(address, amount_to_withdrawal, wallet_number):
         print(f'    [{wallet_number}]{address}', flush=True)
     except Exception as error:
         print(f'\n>>>[Binance] Не удалось вывести {amount_to_withdrawal} {symbolWithdraw}: {error} ', flush=True)
+        print(f'    [{wallet_number}]{address}', flush=True)
+
+def bitget_withdraw(address, amount_to_withdrawal, wallet_number):
+    exchange = ccxt.bitget({
+        'apiKey': API.bitget_apikey,
+        'secret': API.bitget_apisecret,
+        'password': API.bitget_passphrase,
+        'enableRateLimit': True,
+        'proxies': proxies,
+        'options': {
+            'defaultType': 'spot'
+        }
+    })
+    try:
+        exchange.withdraw(
+            code=symbolWithdraw,
+            amount=amount_to_withdrawal,
+            address=address,
+            tag=None,
+            params={
+                "chain": network
+            }
+        )
+        print(f'\n>>>[Bitget] Вывел {amount_to_withdrawal} {symbolWithdraw} ', flush=True)
+        print(f'    [{wallet_number}]{address}', flush=True)
+    except Exception as error:
+        print(f'\n>>>[Bitget] Не удалось вывести {amount_to_withdrawal} {symbolWithdraw}: {error} ', flush=True)
         print(f'    [{wallet_number}]{address}', flush=True)
 
 def okx_withdraw(address, amount_to_withdrawal, wallet_number):
@@ -228,6 +259,8 @@ def choose_cex(address, amount_to_withdrawal, wallet_number):
         kucoin_withdraw(address, amount_to_withdrawal, wallet_number)
     elif switch_cex == "mexc":
         mexc_withdraw(address, amount_to_withdrawal, wallet_number)
+    elif switch_cex == "bitget":
+        bitget_withdraw(address, amount_to_withdrawal, wallet_number)
     else:
         raise ValueError("Неверное значение CEX. Поддерживаемые значения: binance, okx, bybit, gate, huobi, kucoin, mexc.")
 
@@ -280,6 +313,3 @@ if __name__ == "__main__":
             amount_to_withdrawal = round(random.uniform(amount[0], amount[1]), decimal_places)
             choose_cex(address, amount_to_withdrawal, wallet_number)
             time.sleep(random.randint(delay[0], delay[1]))
-
-
-
