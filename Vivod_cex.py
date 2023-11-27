@@ -8,7 +8,8 @@ import hmac, base64
 switch_cex = "binance"       # binance, okx, mexc, kucoin, gate, huobi, bybit, bitget
 symbolWithdraw = "BNB"      # символ токена BNB, ETH, MATIC
 network = "BSC"     # название сети   zkSync Era/zkSyncEra (для bitget), BSC, Arbitrum One, Optimism, zkSync Lite, ETH/ERC20, MATIC
-proxy_server = 'http://l11CQd:ryathpo@47.9.55.230:3000' #"http://login:password@IP:port"
+proxy_server = 'http://l11CQd:ryathpo@47.9.55.230:3000' #"http://login:password@IP:port" 
+# ДЛЯ ОКЕКСА НЕ НУЖНЫ ПРОКСИ
 
 #----second-options----#
 amount = [0.01, 0.01]          # минимальная и максимальная сумма
