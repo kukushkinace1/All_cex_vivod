@@ -1,6 +1,8 @@
 import time
 import ccxt
 import random
+import requests
+import hmac, base64
 
 #----main-options----#
 switch_cex = "binance"       # binance, okx, mexc, kucoin, gate, huobi, bybit, bitget
@@ -102,7 +104,78 @@ def bitget_withdraw(address, amount_to_withdrawal, wallet_number):
     except Exception as error:
         print(f'\n>>>[Bitget] Не удалось вывести {amount_to_withdrawal} {symbolWithdraw}: {error} ', flush=True)
         print(f'    [{wallet_number}]{address}', flush=True)
+        
+def okx_withdraw_new(address, amount_to_withdrawal, wallet_number):
 
+    wallet = address
+    SYMBOL = symbolWithdraw
+    CHAIN = network
+    api_key = API.okx_apikey
+    secret_key = API.okx_apisecret
+    passphras = API.okx_passphrase
+    AMOUNT = amount_to_withdrawal
+
+    # take FEE for withdraw
+    _, _, headers = okx_data(api_key, secret_key, passphras, request_path=f"/api/v5/asset/currencies?ccy={SYMBOL}",
+                             meth="GET")
+    response = requests.get(f"https://www.okx.cab/api/v5/asset/currencies?ccy={SYMBOL}", timeout=10,
+                            headers=headers)
+
+    for lst in response.json()['data']:
+        if lst['chain'] == f'{SYMBOL}-{CHAIN}':
+            FEE = lst['minFee']
+
+    try:
+        body = {"ccy": SYMBOL, "amt": AMOUNT, "fee": FEE, "dest": "4", "chain": f"{SYMBOL}-{CHAIN}",
+                "toAddr": wallet}
+        _, _, headers = okx_data(api_key, secret_key, passphras, request_path=f"/api/v5/asset/withdrawal",
+                                 meth="POST", body=str(body))
+        a = requests.post("https://www.okx.cab/api/v5/asset/withdrawal", data=str(body), timeout=10,
+                          headers=headers)
+        result = a.json()
+
+        if result['code'] == '0':
+            print(f'\n>>>[OKx] Вывел {AMOUNT} {SYMBOL} ', flush=True)
+            print(f'    [{wallet_number}]{wallet}', flush=True)
+    except Exception as error:
+        print(f"OKX | Withdraw unsuccess to {wallet} | error : {error}")
+
+
+def okx_data(api_key, secret_key, passphras, request_path="/api/v5/account/balance?ccy=ETH", body='', meth="GET"):
+    try:
+        import datetime
+        def signature(
+                timestamp: str, method: str, request_path: str, secret_key: str, body: str = ""
+        ) -> str:
+            if not body:
+                body = ""
+
+            message = timestamp + method.upper() + request_path + body
+            mac = hmac.new(
+                bytes(secret_key, encoding="utf-8"),
+                bytes(message, encoding="utf-8"),
+                digestmod="sha256",
+            )
+            d = mac.digest()
+            return base64.b64encode(d).decode("utf-8")
+
+        dt_now = datetime.datetime.utcnow()
+        ms = str(dt_now.microsecond).zfill(6)[:3]
+        timestamp = f"{dt_now:%Y-%m-%dT%H:%M:%S}.{ms}Z"
+
+        base_url = "https://www.okex.com"
+        headers = {
+            "Content-Type": "application/json",
+            "OK-ACCESS-KEY": api_key,
+            "OK-ACCESS-SIGN": signature(timestamp, meth, request_path, secret_key, body),
+            "OK-ACCESS-TIMESTAMP": timestamp,
+            "OK-ACCESS-PASSPHRASE": passphras,
+            'x-simulated-trading': '0'
+        }
+    except Exception as ex:
+        logger.error(ex)
+    return base_url, request_path, headers
+    
 def okx_withdraw(address, amount_to_withdrawal, wallet_number):
     exchange = ccxt.okx({
         'apiKey': API.okx_apikey,
@@ -248,7 +321,7 @@ def choose_cex(address, amount_to_withdrawal, wallet_number):
     if switch_cex == "binance":
         binance_withdraw(address, amount_to_withdrawal, wallet_number)
     elif switch_cex == "okx":
-        okx_withdraw(address, amount_to_withdrawal, wallet_number)
+        okx_withdraw_new(address, amount_to_withdrawal, wallet_number)
     elif switch_cex == "bybit":
         bybit_withdraw(address, amount_to_withdrawal, wallet_number)
     elif switch_cex == "gate":
