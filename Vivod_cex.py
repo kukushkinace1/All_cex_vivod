@@ -138,6 +138,8 @@ def okx_withdraw_new(address, amount_to_withdrawal, wallet_number):
         if result['code'] == '0':
             print(f'\n>>>[OKx] Вывел {AMOUNT} {SYMBOL} ', flush=True)
             print(f'    [{wallet_number}]{wallet}', flush=True)
+        else:
+            print(f"OKX | Withdraw unsuccess to {wallet} | error : {result['msg']}")
     except Exception as error:
         print(f"OKX | Withdraw unsuccess to {wallet} | error : {error}")
 
