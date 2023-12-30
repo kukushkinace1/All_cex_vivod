@@ -6,8 +6,8 @@ import hmac, base64
 
 #----main-options----#
 switch_cex = "binance"       # binance, okx, mexc, kucoin, gate, huobi, bybit, bitget
-symbolWithdraw = "BNB"      # символ токена BNB, ETH, MATIC
-network = "BSC"     # название сети   zkSync Era/zkSyncEra (для bitget), BSC, Arbitrum One, Optimism, zkSync Lite, ETH/ERC20, MATIC
+symbolWithdraw = "BNB"      # символ токена BNB, ETH, MATIC, 
+network = "BSC"     # название сети   zkSync Era/zkSyncEra (для bitget), BSC, Arbitrum One, Optimism, ETH/ERC20, Polygon, Harmony, Moonbeam, Klaytn
 proxy_server = 'http://l11CQd:ryathpo@47.9.55.230:3000' #"http://login:password@IP:port" 
 # ДЛЯ ОКЕКСА НЕ НУЖНЫ ПРОКСИ
 
