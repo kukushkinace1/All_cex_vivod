@@ -121,12 +121,11 @@ def okx_withdraw_new(address, amount_to_withdrawal, wallet_number):
                              meth="GET")
     response = requests.get(f"https://www.okx.cab/api/v5/asset/currencies?ccy={SYMBOL}", timeout=10,
                             headers=headers)
-
-    for lst in response.json()['data']:
-        if lst['chain'] == f'{SYMBOL}-{CHAIN}':
-            FEE = lst['minFee']
-
     try:
+        for lst in response.json()['data']:
+            if lst['chain'] == f'{SYMBOL}-{CHAIN}':
+                FEE = lst['minFee']
+
         body = {"ccy": SYMBOL, "amt": AMOUNT, "fee": FEE, "dest": "4", "chain": f"{SYMBOL}-{CHAIN}",
                 "toAddr": wallet}
         _, _, headers = okx_data(api_key, secret_key, passphras, request_path=f"/api/v5/asset/withdrawal",
@@ -141,7 +140,12 @@ def okx_withdraw_new(address, amount_to_withdrawal, wallet_number):
         else:
             print(f"OKX | Withdraw unsuccess to {wallet} | error : {result['msg']}")
     except Exception as error:
-        print(f"OKX | Withdraw unsuccess to {wallet} | error : {error}")
+        if 'FEE' in str(error):
+            print('Проверь название монеты и сети, скорее всего ты указал неверно!')
+        elif 'data' in str(error):
+            print('Проверь заполнение API OKX. Возможно не дал разрешение на вывод или IP добавил!')
+        else:
+            print(f"OKX | Withdraw unsuccess to {wallet} | error : {error}")
 
 
 def okx_data(api_key, secret_key, passphras, request_path="/api/v5/account/balance?ccy=ETH", body='', meth="GET"):
