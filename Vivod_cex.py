@@ -240,6 +240,10 @@ def gate_withdraw(address, amount_to_withdrawal, wallet_number):
     exchange = ccxt.gate({
         'apiKey': API.gate_apikey,
         'secret': API.gate_apisecret,
+        'enableRateLimit': True,
+        'options': {
+            'defaultType': 'spot',
+        }
     })
 
     try:
